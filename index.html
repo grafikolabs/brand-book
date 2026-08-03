@@ -102,12 +102,13 @@ for (let i = 1; i <= N; i++) {
 
 el.appendChild(frag);
 
+const MW = Math.min(640, window.innerWidth - 28);
 const pageFlip = new St.PageFlip(el, {
-  width: MOBILE ? 640 : 470,
-  height: MOBILE ? 360 : 529,          // phones: full 16:9 slide per page
-  size: 'stretch',
+  width: MOBILE ? MW : 470,
+  height: MOBILE ? Math.round(MW * 9 / 16) : 529,   // phones: fixed full 16:9 slide
+  size: MOBILE ? 'fixed' : 'stretch',
   minWidth: 240, maxWidth: MOBILE ? 700 : 640,
-  minHeight: MOBILE ? 135 : 270, maxHeight: 720,
+  minHeight: 135, maxHeight: 720,
   showCover: false,
   maxShadowOpacity: 0.55,
   flippingTime: 850,
