@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>springbase.ai — brand book</title>
+<style>
+  html,body { margin:0; background:transparent !important; }
+  body { font-family:-apple-system,"SF Pro Text",Inter,sans-serif; }
+
+  .wrap {
+    max-width:1180px; margin:0 auto; padding:18px 12px 8px;
+    box-sizing:border-box;
+  }
+  #book {
+    margin:0 auto;
+    filter:drop-shadow(0 40px 60px rgba(0,0,0,.55));
+  }
+
+  .page {
+    background:#0d1015;
+    background-size:200% 100%;
+    background-repeat:no-repeat;
+    overflow:hidden;
+  }
+  .page.half-l { background-position:left center; border-radius:8px 0 0 8px; }
+  .page.half-r { background-position:right center; border-radius:0 8px 8px 0; }
+
+  /* covers */
+  .cover {
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:14px; background:linear-gradient(150deg,#0e1219,#080a0e);
+    border:1px solid rgba(255,255,255,.09);
+  }
+  .cover.front { border-radius:8px; }
+  .cover .brand {
+    color:#f2f5f7; font-size:clamp(20px,3.2vw,34px); font-weight:700; letter-spacing:.02em;
+  }
+  .cover .sub {
+    color:#5f6c75; font-size:11px; font-weight:600;
+    letter-spacing:.34em; text-transform:uppercase;
+  }
+  .cover .foot {
+    position:absolute; bottom:26px;
+    color:#4a545c; font-size:10px; letter-spacing:.22em; text-transform:uppercase;
+  }
+
+  .bar {
+    display:flex; align-items:center; justify-content:center; gap:18px;
+    margin-top:14px; user-select:none;
+  }
+  .nav {
+    width:34px; height:34px; border-radius:50%; cursor:pointer;
+    display:flex; align-items:center; justify-content:center;
+    background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.14);
+    color:#c7d1d6; font-size:15px; transition:background .25s;
+  }
+  .nav:hover { background:rgba(255,255,255,.16); }
+  .count { color:#5f6c75; font-size:11px; letter-spacing:.18em; min-width:64px; text-align:center; }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div id="book"></div>
+    <div class="bar">
+      <div class="nav" id="prev">‹</div>
+      <div class="count" id="count"></div>
+      <div class="nav" id="next">›</div>
+    </div>
+  </div>
+
+<script src="page-flip.browser.js"></script>
+<script>
+const N = 39;
+const el = document.getElementById('book');
+
+// build pages: front cover, then each slide split across a spread, then back cover
+const frag = document.createDocumentFragment();
+function div(cls, html){ const d = document.createElement('div'); d.className = 'page ' + cls; if (html) d.innerHTML = html; return d; }
+
+// StPageFlip overwrites inline styles, so backgrounds live in generated CSS classes
+let css = '';
+for (let i = 1; i <= N; i++) {
+  const id = String(i).padStart(2,'0');
+  css += `.pg-${id}{background-image:url(pages/p${id}.jpg)}\n`;
+}
+const styleEl = document.createElement('style');
+styleEl.textContent = css;
+document.head.appendChild(styleEl);
+
+for (let i = 1; i <= N; i++) {
+  const id = String(i).padStart(2,'0');
+  frag.appendChild(div('half-l pg-' + id));
+  frag.appendChild(div('half-r pg-' + id));
+}
+
+el.appendChild(frag);
+
+const pageFlip = new St.PageFlip(el, {
+  width: 470, height: 529,             // half-slide ratio (960:1080)
+  size: 'stretch',
+  minWidth: 240, maxWidth: 640,
+  minHeight: 270, maxHeight: 720,
+  showCover: false,
+  maxShadowOpacity: 0.55,
+  flippingTime: 850,
+  usePortrait: true,
+  mobileScrollSupport: true,
+});
+pageFlip.loadFromHTML(document.querySelectorAll('.page'));
+
+const count = document.getElementById('count');
+function updateCount(){
+  const slide = Math.floor(pageFlip.getCurrentPageIndex() / 2) + 1;
+  count.textContent = `${slide} / ${N}`;
+}
+pageFlip.on('flip', updateCount);
+updateCount();
+
+document.getElementById('prev').onclick = () => pageFlip.flipPrev();
+document.getElementById('next').onclick = () => pageFlip.flipNext();
+window.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight') pageFlip.flipNext();
+  if (e.key === 'ArrowLeft') pageFlip.flipPrev();
+});
+</script>
+</body>
+</html>
