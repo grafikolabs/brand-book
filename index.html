@@ -25,6 +25,7 @@
   }
   .page.half-l { background-position:left center; border-radius:8px 0 0 8px; }
   .page.half-r { background-position:right center; border-radius:0 8px 8px 0; }
+  .page.full { background-size:100% 100%; background-position:center; border-radius:8px; }
 
   /* covers */
   .cover {
@@ -88,19 +89,25 @@ const styleEl = document.createElement('style');
 styleEl.textContent = css;
 document.head.appendChild(styleEl);
 
+const MOBILE = matchMedia('(max-width:700px)').matches;
 for (let i = 1; i <= N; i++) {
   const id = String(i).padStart(2,'0');
-  frag.appendChild(div('half-l pg-' + id));
-  frag.appendChild(div('half-r pg-' + id));
+  if (MOBILE) {
+    frag.appendChild(div('full pg-' + id));      // phones: one whole slide per page
+  } else {
+    frag.appendChild(div('half-l pg-' + id));
+    frag.appendChild(div('half-r pg-' + id));
+  }
 }
 
 el.appendChild(frag);
 
 const pageFlip = new St.PageFlip(el, {
-  width: 470, height: 529,             // half-slide ratio (960:1080)
+  width: MOBILE ? 640 : 470,
+  height: MOBILE ? 360 : 529,          // phones: full 16:9 slide per page
   size: 'stretch',
-  minWidth: 240, maxWidth: 640,
-  minHeight: 270, maxHeight: 720,
+  minWidth: 240, maxWidth: MOBILE ? 700 : 640,
+  minHeight: MOBILE ? 135 : 270, maxHeight: 720,
   showCover: false,
   maxShadowOpacity: 0.55,
   flippingTime: 850,
@@ -111,7 +118,8 @@ pageFlip.loadFromHTML(document.querySelectorAll('.page'));
 
 const count = document.getElementById('count');
 function updateCount(){
-  const slide = Math.floor(pageFlip.getCurrentPageIndex() / 2) + 1;
+  const idx = pageFlip.getCurrentPageIndex();
+  const slide = MOBILE ? idx + 1 : Math.floor(idx / 2) + 1;
   count.textContent = `${slide} / ${N}`;
 }
 pageFlip.on('flip', updateCount);
